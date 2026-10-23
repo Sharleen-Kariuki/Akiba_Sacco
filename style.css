@@ -1,0 +1,239 @@
+body{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#nokia{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 420px;
+    height: auto;
+    width: 200px;
+    background: rgb(41,41,41);
+    border-radius: 25px;
+    border: 5px solid rgb(200,200,200);
+    padding-bottom: 16px;
+    box-sizing: border-box;
+}
+
+#dots {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+
+}
+
+.dot{
+    width:5px ;
+    height:5px ;
+    background: rgb(100,100,100);
+    border-radius: 2.5px;
+    margin-top: 3px;
+}
+#text{
+    color: rgb(255,255,255);
+    background: rgb(62,62,62);
+    font-size: 12px;
+    font-weight:900;
+    margin: 5px 0 10px 0;
+    padding: 0 5px;
+}
+
+#screen {
+    background: rgb(0,90,18);
+    height: 128px;
+    width: 160px;
+    border: 2px solid rgb(160, 160, 160);
+    border-radius: 4px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    user-select: none;
+    cursor: pointer; /* Makes it clickable */
+    color: #bbf0b5;
+    text-shadow: 0 0 1px #55aa55;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+#screen:hover {
+    filter: brightness(1.1);
+}
+
+#screen:active {
+    filter: brightness(0.95);
+}
+
+.screen-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    opacity: 0.9;
+    border-bottom: 1px dotted rgba(187, 240, 181, 0.3);
+    padding-bottom: 2px;
+}
+
+.screen-header i {
+    font-size: 8.5px;
+    margin-right: 2px;
+}
+
+.screen-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+    padding: 2px;
+    font-size: 10px;
+    line-height: 1.25;
+}
+
+.screen-body h4 {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.screen-body p {
+    margin: 2px 0 0 0;
+    font-size: 9.5px;
+}
+
+/* Dialer screen when typing in standby and input screens */
+.dialer-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding-right: 6px;
+    box-sizing: border-box;
+}
+
+.dialer-prompt-header {
+    width: 100%;
+    text-align: left;
+    margin-bottom: auto;
+    padding-top: 2px;
+}
+
+.dialer-prompt-header h4 {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.dialer-subprompt {
+    font-size: 8.5px;
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
+.dialer-digits {
+    font-size: 30px;
+    font-weight: 700;
+    font-family: 'Courier New', Courier, monospace;
+    text-align: right;
+    letter-spacing: 1px;
+    color: #bbf0b5;
+    text-shadow: 0 0 2px #55aa55;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: block;
+}
+
+.dialer-digits.phone-digits {
+    font-size: 18px;
+    letter-spacing: 0.5px;
+}
+
+#screen-footer {
+    min-height: 14px;
+    font-size: 10px;
+    text-align: center;
+    font-weight: bold;
+    border-top: 1px dotted rgba(187, 240, 181, 0.3);
+    padding-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#numbers {
+    width:70%;
+}
+.row{
+    display: flex;
+    justify-content: space-between;
+}
+
+.number {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
+    width: 30px;
+    background: rgb(230,230,230);
+    padding: 0 5px;
+    margin-top: 5px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.06s ease, background 0.1s ease;
+}
+
+.number:hover {
+    background: rgb(210, 210, 210);
+}
+
+.number:active {
+    transform: scale(0.92);
+    background: rgb(180, 180, 180);
+}
+
+.front-number {
+    border-radius: 0 12px;
+}
+.back-number{
+    border-radius: 12px;
+}
+.text-number{
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.control-row {
+    margin-bottom: 2px;
+}
+
+.btn-call {
+    color: #1b5e20;
+    border-radius: 6px 0 0 6px;
+}
+
+.btn-back {
+    color: #333333;
+    border-radius: 4px;
+}
+
+.btn-end {
+    color: #c62828;
+    border-radius: 0 6px 6px 0;
+}
