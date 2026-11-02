@@ -1,0 +1,406 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e5edf2;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 24px 16px;
+}
+
+.phones-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+/* Ensure the status bar is visible and properly styled */
+/* Status bar styling */
+.status-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: end;
+  width: 100%;
+  padding: 4px 5px;
+  
+  /* color: #ffffff; */
+  font-size: 12px;
+  font-weight: bold;
+  border-bottom: 1px solid #335c84;
+  gap: 5px;
+}
+
+.status-bar .signal,
+.status-bar .battery {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-bar .signal i,
+.status-bar .battery i {
+  font-size: 10px;
+  color: #000000;
+}
+
+.phone-casing {
+  width: 230px;
+  background: #005AFF;
+  border-radius: 46px 46px 64px 64px;
+  padding: 16px 14px 28px;
+  box-shadow:
+    0 24px 48px rgba(15, 23, 42, 0.45),
+    0 8px 16px rgba(15, 23, 42, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.25),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.screen-housing {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+/* The iconic silver/white pinstripe border enclosing speaker, brand & screen */
+.bezel-inner-frame {
+  width: 100%;
+  background: #272727;
+  border: 3px solid #ffffff;
+  border-radius: 36px 36px 18px 18px;
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.earpiece-slot {
+  width: 60px;
+  height: 5px;
+  background: #474747;
+  border-radius: 2px;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nokia-brand {
+  font-family: 'Courier New', Courier, monospace;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-top: 30px;
+  margin-bottom: 10px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.lcd-viewport {
+  width: 160px;
+  height: 128px;
+  box-sizing: border-box;
+  background-color: #d2dcd5;
+  color: #0b0f0c;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+  padding: 6px;
+  border-radius: 2px;
+  border: 1px solid #232729;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  word-break: break-word;
+  pointer-events: none;
+}
+
+.screen-content {
+  width: 100%;
+  height: 100%;
+  white-space: pre-line;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.keypad-chassis {
+  width: 100%;
+  padding: 4px 6px 0;
+}
+
+/* Generic Button Reset */
+.btn {
+  appearance: none;
+  border: none;
+  background: #141619;
+  color: #ffffff;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.05s ease, filter 0.05s ease;
+}
+
+.btn:active {
+  transform: scale(0.96);
+  filter: brightness(1.25);
+}
+
+/* --- Control Cluster (Wings + Navi Ring) --- */
+.control-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.key-wing {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Horizontal pill softkeys (—) */
+.btn-soft {
+  width: 48px;
+  height: 26px;
+  background: #1b1e22;
+  border-radius: 8px;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.btn-soft .bar-icon {
+  width: 18px;
+  height: 3px;
+  background-color: #ffffff;
+  border-radius: 1.5px;
+}
+
+/* Call Key (Green U-hook) */
+.btn-call {
+  width: 48px;
+  height: 26px;
+  background: #181b1f;
+  border-radius: 13px;
+  box-shadow: 0 3px 4px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+.btn-call .call-icon {
+  width: 20px;
+  height: 8px;
+  border: 2.5px solid #2ecc71;
+  border-top: none;
+  border-radius: 0 0 7px 7px;
+  transform: rotate(180deg);
+}
+
+/* End Key (Red Power/End symbol) */
+.btn-end {
+  width: 48px;
+  height: 26px;
+  background: #181b1f;
+  border-radius: 13px;
+  box-shadow: 0 3px 4px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+.btn-end .end-icon {
+  width: 20px;
+  height: 8px;
+  border: 2.5px solid #d52c13;
+  border-top: none;
+  border-radius: 0 0 7px 7px;
+  transform: rotate(180deg);
+}
+
+/* Center Navi Key */
+.navi-ring-wrapper {
+  width: 66px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-navi {
+  width: 66px;
+  height: 56px;
+  background: linear-gradient(145deg, #24292e, #14171a);
+  border: 1.5px solid #000000;
+  border-radius: 18px;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.7),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navi-ring-cutout {
+  width: 50px;
+  height: 42px;
+  background: #111215;
+  border: 1px solid white;
+  border-radius: 10px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* --- Numeric Grid (3x4) --- */
+.numeric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 7px 5px;
+}
+
+.btn-num {
+  position: relative;
+  height: 38px;
+  background: linear-gradient(180deg, #2a2d33 0%, #1c1e22 55%, #131417 100%);
+  border: 1px solid #0a0b0d;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9px;
+  box-shadow:
+    0 3px 4px rgba(0, 0, 0, 0.75),
+    inset 0 1px 1px rgba(255, 255, 255, 0.16),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.6);
+  display: block;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.05s ease, filter 0.05s ease, box-shadow 0.05s ease;
+}
+
+.btn-num:active {
+  transform: translateY(1px) scale(0.97);
+  filter: brightness(1.15);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.8),
+    inset 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* Large, light-colored number positioned in the upper-middle */
+.btn-num .digit {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
+
+/* Much smaller, subtle letters positioned at the bottom-left like subscripts */
+.btn-num .symbols {
+  position: absolute;
+  bottom: 3.5px;
+  left: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #8fa0b5;
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.3px;
+  line-height: 1;
+  opacity: 0.85;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
+
+/* Tactile home pip on Key 5 */
+.btn-num[data-key="5"]::after {
+  content: '';
+  position: absolute;
+  right: 7px;
+  bottom: 5px;
+  width: 2.5px;
+  height: 2.5px;
+  background: #cbd5e1;
+  border-radius: 50%;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.8);
+  opacity: 0.55;
+}
+
+/* ===================================================================
+   SMALL INSTRUCTION MANUAL (RIGHT PANEL)
+   =================================================================== */
+
+.manual-panel {
+  width: 270px;
+  background: #ffffff;
+  border: 2px solid #232729;
+  border-radius: 4px;
+  padding: 16px 14px;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #111111;
+  align-self: center;
+}
+
+.manual-panel .manual-title {
+  font-weight: bold;
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.manual-panel .manual-sub {
+  font-size: 10.5px;
+  font-weight: bold;
+  text-align: center;
+  color: #333333;
+}
+
+.manual-panel .manual-line {
+  color: #777777;
+  font-size: 10px;
+  margin: 3px 0;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.manual-panel .manual-block {
+  margin: 8px 0;
+}
+
+.manual-panel .block-title {
+  font-weight: bold;
+  color: #000000;
+  text-decoration: underline;
+  margin-bottom: 2px;
+}
+
+.manual-panel .manual-foot {
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  margin-top: 4px;
+}

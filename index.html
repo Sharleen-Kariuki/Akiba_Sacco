@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akiba SACCO — USSD Web Emulator</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Add this in the <head> section of index.html -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <main class="phones-container">
+
+    <!-- Phone 1: English -->
+    <div class="phone-casing" id="phone-en" data-phone-id="en" aria-label="Nokia 1280 USSD Emulator English">
+      <section class="screen-housing">
+        <div class="bezel-inner-frame">
+          <div class="earpiece-slot" aria-hidden="true"></div>
+          <div class="nokia-brand" aria-hidden="true">NOKIA</div>
+          <div class="lcd-viewport" aria-live="polite" role="status">
+
+            
+            <div id="screen-content-en" class="screen-content">
+           
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="keypad-chassis" aria-label="Physical Keypad">
+        <div class="control-cluster">
+          <div class="key-wing key-wing-left">
+            <button type="button" class="btn btn-soft" data-action="soft-left" aria-label="Left Softkey">
+              <span class="bar-icon"></span>
+            </button>
+            <button type="button" class="btn btn-call" data-action="call" aria-label="Call / Dialing">
+              <span class="call-icon"></span>
+            </button>
+          </div>
+
+          <div class="navi-ring-wrapper">
+            <button type="button" class="btn btn-navi" data-action="ok" aria-label="Select / OK">
+              <div class="navi-ring-cutout"></div>
+            </button>
+          </div>
+
+          <div class="key-wing key-wing-right">
+            <button type="button" class="btn btn-soft" data-action="back" aria-label="Right Softkey (Back)">
+              <span class="bar-icon"></span>
+            </button>
+            <button type="button" class="btn btn-end" data-action="end" aria-label="End / Power">
+              <span class="end-icon"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="numeric-grid" role="group" aria-label="Numeric Keys">
+          <button type="button" class="btn btn-num" data-key="1">
+            <span class="digit">1</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="2">
+            <span class="digit">2</span> <span class="symbols">abc</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="3">
+            <span class="digit">3</span> <span class="symbols">def</span>
+          </button>
+
+          <button type="button" class="btn btn-num" data-key="4">
+            <span class="digit">4</span> <span class="symbols">ghi</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="5">
+            <span class="digit">5</span> <span class="symbols">jkl</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="6">
+            <span class="digit">6</span> <span class="symbols">mno</span>
+          </button>
+
+          <button type="button" class="btn btn-num" data-key="7">
+            <span class="digit">7</span> <span class="symbols">pqrs</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="8">
+            <span class="digit">8</span> <span class="symbols">tuv</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="9">
+            <span class="digit">9</span> <span class="symbols">wxyz</span>
+          </button>
+
+          <button type="button" class="btn btn-num" data-key="*">
+            <span class="digit">*</span> <span class="symbols">+</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="0">
+            <span class="digit">0</span> <span class="symbols">_</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="#">
+            <span class="digit">#</span> <span class="symbols">?</span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Phone 2: Kiswahili (Identical duplicate) -->
+    <div class="phone-casing" id="phone-sw" data-phone-id="sw" aria-label="Nokia 1280 USSD Emulator Kiswahili">
+      <section class="screen-housing">
+        <div class="bezel-inner-frame">
+          <div class="earpiece-slot" aria-hidden="true"></div>
+          <div class="nokia-brand" aria-hidden="true">NOKIA</div>
+          <div class="lcd-viewport" aria-live="polite" role="status">
+            <div id="screen-content-sw" class="screen-content"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="keypad-chassis" aria-label="Physical Keypad">
+        <div class="control-cluster">
+          <div class="key-wing key-wing-left">
+            <button type="button" class="btn btn-soft" data-action="soft-left" aria-label="Left Softkey">
+              <span class="bar-icon"></span>
+            </button>
+            <button type="button" class="btn btn-call" data-action="call" aria-label="Call / Piga">
+              <span class="call-icon"></span>
+            </button>
+          </div>
+
+          <div class="navi-ring-wrapper">
+            <button type="button" class="btn btn-navi" data-action="ok" aria-label="Select / OK">
+              <div class="navi-ring-cutout"></div>
+            </button>
+          </div>
+
+          <div class="key-wing key-wing-right">
+            <button type="button" class="btn btn-soft" data-action="back" aria-label="Right Softkey (Rudi)">
+              <span class="bar-icon"></span>
+            </button>
+            <button type="button" class="btn btn-end" data-action="end" aria-label="End / Kata">
+              <span class="end-icon"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="numeric-grid" role="group" aria-label="Numeric Keys">
+          <button type="button" class="btn btn-num" data-key="1">
+            <span class="digit">1</span> 
+          </button>
+          <button type="button" class="btn btn-num" data-key="2">
+            <span class="digit">2</span> <span class="symbols">abc</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="3">
+            <span class="digit">3</span> <span class="symbols">def</span>
+          </button>
+
+          <button type="button" class="btn btn-num" data-key="4">
+            <span class="digit">4</span> <span class="symbols">ghi</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="5">
+            <span class="digit">5</span> <span class="symbols">jkl</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="6">
+            <span class="digit">6</span> <span class="symbols">mno</span>
+          </button>
+
+          <button type="button" class="btn btn-num" data-key="7">
+            <span class="digit">7</span> <span class="symbols">pqrs</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="8">
+            <span class="digit">8</span> <span class="symbols">tuv</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="9">
+            <span class="digit">9</span> <span class="symbols">wxyz</span>
+          </button>
+
+          <button type="button" class="btn btn-num" data-key="*">
+            <span class="digit">*</span> <span class="symbols">+</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="0">
+            <span class="digit">0</span> <span class="symbols">_</span>
+          </button>
+          <button type="button" class="btn btn-num" data-key="#">
+            <span class="digit">#</span> <span class="symbols">?</span>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Small Instruction Manual on the Right -->
+    <aside class="manual-panel">
+      <div class="manual-title">INSTRUCTION MANUAL</div>
+      <div class="manual-line">=============================</div>
+      <div class="manual-sub">AKIBA SACCO USSD SYSTEM</div>
+      <div class="manual-line">-----------------------------</div>
+
+      <div class="manual-block">
+        <div class="block-title">1. DIALING / KUPIGA</div>
+        <div>- Dial: *144#</div>
+        <div>- Press CALL (Green key)</div>
+      </div>
+
+      <div class="manual-block">
+        <div class="block-title">2. MAIN MENU / MENYU KUU</div>
+        <div>1. Balance Enquiry</div>
+        <div>   / Taarifa ya Salio</div>
+        <div>2. Withdraw Money</div>
+        <div>   / Toa Pesa</div>
+      </div>
+
+      <div class="manual-block">
+        <div class="block-title">3. WITHDRAWAL / KUTOA PESA</div>
+        <div>- Recipient / Mpokeaji:</div>
+        <div>  1. My Number (Yangu)</div>
+        <div>  2. Other Number (Nyingine)</div>
+        <div>- Phone: 10 digits (07../01..)</div>
+        <div>- Amount: Min KES 50</div>
+        <div>- Confirm / Thibitisha:</div>
+        <div>  1. Confirm   2. Cancel</div>
+      </div>
+
+      <div class="manual-block">
+        <div class="block-title">4. CONTROLS / VITUFE</div>
+        <div>[CALL] : Dial / Send</div>
+        <div>[OK]   : Select / Submit</div>
+        <div>[BACK] : Backspace / Return</div>
+        <div>[END]  : Terminate session</div>
+      </div>
+
+      <div class="manual-line">=============================</div>
+      <div class="manual-foot">SERVICE CODE: *144#</div>
+    </aside>
+
+  </main>
+
+  <script type="module" src="dist/app.js"></script>
+</body>
+</html>
