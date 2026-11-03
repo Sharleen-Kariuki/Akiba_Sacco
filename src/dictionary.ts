@@ -1,9 +1,9 @@
-// English and Swahili String Dictonaries
-import { Language, Translations } from "./types";
+// English and Swahili String Dictionaries
+import { Language, Translations } from "./types.js";
 
 export const dictonary: Record<Language, Translations> = {
     en: {
-        dailingPrompt: "Akiba SACCO\n Dail *144#",
+        dialingPrompt: "Akiba SACCO\n Dail *144#",
         mainMenuTitle: "Akiba SACCO",
         mainMenuOption1: "1. Balance Enquiry",
         mainMenuOption2: "2. Withdraw Money",
@@ -22,10 +22,12 @@ export const dictonary: Record<Language, Translations> = {
         errorInvalidUssd: "Invalid USSD Code.\nUse *144#",
         errorInvalidPhone: "Invalid Phone.\nMust be 10 digits\n(07... or 01...)",
         errorInvalidAmount: "Invalid Amount.\nMin: KES 50",
-        errorInsufficientBalance: "Failed:\nInsufficient balance."
+        errorInsufficientBalance: "Failed:\nInsufficient balance.",
+        errorInvalidInput: "Invalid input.\nTry again.",
+        errorInvalidChoice: "Invalid choice.\nTry again."
     },
     sw: {
-        dailingPrompt: "Akiba SACCO\nPiga *144#",
+        dialingPrompt: "Akiba SACCO\nPiga *144#",
         mainMenuTitle: "Akiba SACCO",
         mainMenuOption1: "1. Taarifa ya Salio",
         mainMenuOption2: "2. Toa Pesa",
@@ -44,6 +46,10 @@ export const dictonary: Record<Language, Translations> = {
         errorInvalidUssd: "Nambari sio sahihi.\nTumia *144#",
         errorInvalidPhone: "Namba sio sahihi.\nTariki 10 (07/01)",
         errorInvalidAmount: "Kiasi sio sahihi.\nKiwango cha chini: 50",
-        errorInsufficientBalance: "Imeshindikana:\nSalio haitoshi."
+        errorInsufficientBalance: "Imeshindikana:\nSalio haitoshi.",
+        errorInvalidInput: "Ingizo sio sahihi.\nJaribu tena.",
+        errorInvalidChoice: "Chaguo sio sahihi.\nJaribu tena."
     }
 };
+
+export const dictionary = dictonary;

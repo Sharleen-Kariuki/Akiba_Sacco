@@ -5,9 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Akiba SACCO — USSD Web Emulator</title>
+  <!-- Local DataTables Stylesheet -->
+  <link rel="stylesheet" href="DataTables/datatables.min.css">
   <link rel="stylesheet" href="styles.css">
-  <!-- Add this in the <head> section of index.html -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -22,9 +23,9 @@
           <div class="nokia-brand" aria-hidden="true">NOKIA</div>
           <div class="lcd-viewport" aria-live="polite" role="status">
 
-            
+
             <div id="screen-content-en" class="screen-content">
-           
+              <!-- Content is added here. -->
             </div>
           </div>
         </div>
@@ -58,45 +59,7 @@
         </div>
 
         <div class="numeric-grid" role="group" aria-label="Numeric Keys">
-          <button type="button" class="btn btn-num" data-key="1">
-            <span class="digit">1</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="2">
-            <span class="digit">2</span> <span class="symbols">abc</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="3">
-            <span class="digit">3</span> <span class="symbols">def</span>
-          </button>
-
-          <button type="button" class="btn btn-num" data-key="4">
-            <span class="digit">4</span> <span class="symbols">ghi</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="5">
-            <span class="digit">5</span> <span class="symbols">jkl</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="6">
-            <span class="digit">6</span> <span class="symbols">mno</span>
-          </button>
-
-          <button type="button" class="btn btn-num" data-key="7">
-            <span class="digit">7</span> <span class="symbols">pqrs</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="8">
-            <span class="digit">8</span> <span class="symbols">tuv</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="9">
-            <span class="digit">9</span> <span class="symbols">wxyz</span>
-          </button>
-
-          <button type="button" class="btn btn-num" data-key="*">
-            <span class="digit">*</span> <span class="symbols">+</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="0">
-            <span class="digit">0</span> <span class="symbols">_</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="#">
-            <span class="digit">#</span> <span class="symbols">?</span>
-          </button>
+          <!-- Dynamically rendered via TypeScript -->
         </div>
       </section>
     </div>
@@ -141,45 +104,7 @@
         </div>
 
         <div class="numeric-grid" role="group" aria-label="Numeric Keys">
-          <button type="button" class="btn btn-num" data-key="1">
-            <span class="digit">1</span> 
-          </button>
-          <button type="button" class="btn btn-num" data-key="2">
-            <span class="digit">2</span> <span class="symbols">abc</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="3">
-            <span class="digit">3</span> <span class="symbols">def</span>
-          </button>
-
-          <button type="button" class="btn btn-num" data-key="4">
-            <span class="digit">4</span> <span class="symbols">ghi</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="5">
-            <span class="digit">5</span> <span class="symbols">jkl</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="6">
-            <span class="digit">6</span> <span class="symbols">mno</span>
-          </button>
-
-          <button type="button" class="btn btn-num" data-key="7">
-            <span class="digit">7</span> <span class="symbols">pqrs</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="8">
-            <span class="digit">8</span> <span class="symbols">tuv</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="9">
-            <span class="digit">9</span> <span class="symbols">wxyz</span>
-          </button>
-
-          <button type="button" class="btn btn-num" data-key="*">
-            <span class="digit">*</span> <span class="symbols">+</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="0">
-            <span class="digit">0</span> <span class="symbols">_</span>
-          </button>
-          <button type="button" class="btn btn-num" data-key="#">
-            <span class="digit">#</span> <span class="symbols">?</span>
-          </button>
+          <!-- Dynamically rendered via TypeScript -->
         </div>
       </section>
     </div>
@@ -230,6 +155,101 @@
 
   </main>
 
+  <!-- USSD Session Log & Audit Trail DataTable -->
+  <section class="session-log-section" aria-label="USSD Session Audit Log">
+    <div class="log-section-header">
+      <div class="log-section-title-wrapper">
+        <h2 class="log-section-title"><i class="fas fa-list-alt"></i> USSD SESSION LOG &amp; AUDIT TRAIL</h2>
+        <p class="log-section-subtitle">Real-time session tracker, expandable event drawers, and inserted value analytics</p>
+      </div>
+      <div class="log-actions">
+        <button type="button" id="btn-clear-logs" class="btn-tool btn-danger" title="Clear all log entries">
+          <i class="fas fa-trash-alt"></i> Clear Logs
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Session Metric Ribbon Cards -->
+    <div class="stats-ribbon">
+      <div class="stat-card">
+        <div class="stat-label">SESSIONS INITIATED</div>
+        <div class="stat-value" id="stat-sessions">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">ACTIVE SESSIONS</div>
+        <div class="stat-value" id="stat-active">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">TOTAL LOG EVENTS</div>
+        <div class="stat-value" id="stat-logs">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">VALUE TRANSACTED</div>
+        <div class="stat-value" id="stat-value">KES 0</div>
+      </div>
+    </div>
+
+    <!-- DataTable Controls: Filter Selectors & Real-Time Search -->
+    <div class="datatable-controls">
+      <div class="filter-group">
+        <div class="filter-item">
+          <label for="filter-device">Device:</label>
+          <select id="filter-device" class="control-select">
+            <option value="ALL">All Devices</option>
+            <option value="en">EN (Phone 1)</option>
+            <option value="sw">SW (Phone 2)</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="filter-status">Status:</label>
+          <select id="filter-status" class="control-select">
+            <option value="ALL">All Statuses</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="SUCCESS">SUCCESS</option>
+            <option value="ERROR">ERROR</option>
+            <option value="TIMEOUT">TIMEOUT</option>
+            <option value="TERMINATED">TERMINATED</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="filter-page">Page:</label>
+          <select id="filter-page" class="control-select">
+            <option value="ALL">All Pages</option>
+          </select>
+        </div>
+
+        <button type="button" id="btn-reset-filters" class="btn-reset" title="Reset all filters">
+          <i class="fas fa-undo"></i> Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- DataTables Sessions Master Table with Event Drawers -->
+    <div class="table-responsive">
+      <table class="display ussd-datatable" id="ussd-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th class="col-control" style="width: 32px; text-align: center;"></th>
+            <th>Session ID</th>
+            <th>Device</th>
+            <th>Started At</th>
+            <th>Last Active</th>
+            <th>Total Events</th>
+            <th>Value Transacted</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="ussd-table-body">
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Local DataTables JavaScript (v3.1.3 standalone) -->
+  <script src="DataTables/datatables.min.js"></script>
   <script type="module" src="dist/app.js"></script>
 </body>
+
 </html>

@@ -1,17 +1,14 @@
-import { ScreenState, KeypadKey, Language } from './types.js';
+import { ScreenState, KeypadKey, Language, AppContext } from './types.js';
 import { dictonary } from './dictionary.js';
+import { getMenu } from './menus.js';
 
-export interface AppContext {
-  current: ScreenState;
-  history: ScreenState[];
-  userBalance: number;
-  userOwnPhone: string;
-  language: Language;
-}
+export type { AppContext } from './types.js';
+export { renderKeypad, renderAllKeypads } from './keypad.js';
+export { MENUS, getMenu, formatMenu } from './menus.js';
 
 export function createInitialContext(): AppContext {
   return {
-    current: { state: 'dailing', buffer: '' },
+    current: { state: 'dialing', buffer: '' },
     history: [],
     userBalance: 15250.00,
     userOwnPhone: '0700123456',
@@ -39,7 +36,7 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
   if (key === 'end') {
     return {
       ...ctx,
-      current: { state: 'dailing', buffer: '' },
+      current: { state: 'dialing', buffer: '' },
       history: []
     };
   }
@@ -49,7 +46,7 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
     if (key === 'back' || key === 'ok' || key === 'call' || key === '1' || key === '2') {
       return {
         ...ctx,
-        current: { state: 'dailing', buffer: '' },
+        current: { state: 'dialing', buffer: '' },
         history: []
       };
     }
@@ -65,13 +62,8 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
       };
     }
 
-    // 2. If in an input screen with buffered characters, Back acts as Backspace
-    if (
-      (current.state === 'dailing' ||
-        current.state === 'enter-phone-number' ||
-        current.state === 'enter-amount') &&
-      current.buffer.length > 0
-    ) {
+    // 2. If in an input screen OR menu with buffered characters, Back acts as Backspace
+    if ('buffer' in current && typeof current.buffer === 'string' && current.buffer.length > 0) {
       return {
         ...ctx,
         current: { ...current, buffer: current.buffer.slice(0, -1) }
@@ -92,14 +84,79 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
     return ctx;
   }
 
-  // Screen-Specific Transitions
+  // 1. Scalable Object-Driven Menu Transitions:
+  // When on a menu, the user types an option key (displays on screen), then presses OK to submit
+  const menu = getMenu(current.state);
+  if (menu) {
+    // Submit the chosen option via OK or Call
+    if (key === 'ok' || key === 'call') {
+      const typedKey = (current as any).buffer || '';
+      if (!typedKey) {
+        return {
+          ...ctx,
+          current: {
+            ...current,
+            error: t.errorInvalidChoice
+          }
+        };
+      }
+
+      const selectedOption = menu.options[typedKey];
+      if (selectedOption) {
+        const nextState = selectedOption.onSelect(ctx);
+        return {
+          ...ctx,
+          current: nextState,
+          history: [...history, { ...current, buffer: '' }]
+        };
+      } else {
+        // Unknown or invalid option entered
+        return {
+          ...ctx,
+          current: {
+            ...current,
+            buffer: '',
+            error: t.errorInvalidChoice
+          }
+        };
+      }
+    }
+
+    // Type option digit (display choice on screen before submission)
+    if (/^[0-9]$/.test(key)) {
+      const currentBuffer = (current as any).buffer || '';
+      if (currentBuffer.length < 2) {
+        return {
+          ...ctx,
+          current: {
+            ...current,
+            buffer: currentBuffer + key,
+            error: undefined
+          }
+        };
+      }
+      return ctx;
+    }
+
+    // Keys without functionality on menus (e.g. *, #) trigger invalid input validation
+    return {
+      ...ctx,
+      current: {
+        ...current,
+        error: t.errorInvalidInput
+      }
+    };
+  }
+
+  // 2. Specific Screen Transitions
   switch (current.state) {
-    case 'dailing': {
-      if (key === 'call') {
-        if (current.buffer === '*144#') {
+    case 'dialing': {
+      const dialBuffer = (current as any).buffer || '';
+      if (key === 'call' || key === 'ok') {
+        if (dialBuffer === '*144#') {
           return {
             ...ctx,
-            current: { state: 'main-menu' },
+            current: { state: 'main-menu', buffer: '' },
             history: [current]
           };
         } else {
@@ -109,76 +166,42 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
           };
         }
       }
-      if (key !== 'ok') {
+      if (/^[0-9*#]$/.test(key)) {
         return {
           ...ctx,
-          current: { state: 'dailing', buffer: current.buffer + key, error: undefined }
+          current: { state: 'dialing', buffer: dialBuffer + key, error: undefined }
         };
       }
-      return ctx;
-    }
-
-    case 'main-menu': {
-      if (key === '1') {
-        return {
-          ...ctx,
-          current: { state: 'balance-screen', balance: userBalance },
-          history: [...history, current]
-        };
-      }
-      if (key === '2') {
-        return {
-          ...ctx,
-          current: { state: 'withdraw-menu' },
-          history: [...history, current]
-        };
-      }
-      return ctx;
+      return {
+        ...ctx,
+        current: { ...current, error: t.errorInvalidInput }
+      };
     }
 
     case 'balance-screen': {
       if (key === 'ok') {
         return {
           ...ctx,
-          current: { state: 'main-menu' },
+          current: { state: 'main-menu', buffer: '' },
           history: history.length > 0 ? history.slice(0, -1) : []
         };
       }
-      return ctx;
-    }
-
-    case 'withdraw-menu': {
-      if (key === '1') {
-        return {
-          ...ctx,
-          current: {
-            state: 'enter-amount',
-            recipientType: 'MY_NUMBER',
-            recipientPhone: userOwnPhone,
-            buffer: ''
-          },
-          history: [...history, current]
-        };
-      }
-      if (key === '2') {
-        return {
-          ...ctx,
-          current: { state: 'enter-phone-number', buffer: '' },
-          history: [...history, current]
-        };
-      }
-      return ctx;
+      return {
+        ...ctx,
+        current: { ...current, error: t.errorInvalidInput }
+      };
     }
 
     case 'enter-phone-number': {
+      const phoneBuffer = (current as any).buffer || '';
       if (key === 'ok') {
-        if (isValidKenyanPhone(current.buffer)) {
+        if (isValidKenyanPhone(phoneBuffer)) {
           return {
             ...ctx,
             current: {
               state: 'enter-amount',
               recipientType: 'OTHER_NUMBER',
-              recipientPhone: current.buffer,
+              recipientPhone: phoneBuffer,
               buffer: ''
             },
             history: [...history, current]
@@ -190,18 +213,22 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
           };
         }
       }
-      if (/^[0-9]$/.test(key) && current.buffer.length < 10) {
+      if (/^[0-9]$/.test(key) && phoneBuffer.length < 10) {
         return {
           ...ctx,
-          current: { ...current, buffer: current.buffer + key, error: undefined }
+          current: { ...current, buffer: phoneBuffer + key, error: undefined }
         };
       }
-      return ctx;
+      return {
+        ...ctx,
+        current: { ...current, error: t.errorInvalidInput }
+      };
     }
 
     case 'enter-amount': {
+      const amountBuffer = (current as any).buffer || '';
       if (key === 'ok') {
-        const validated = isValidAmount(current.buffer);
+        const validated = isValidAmount(amountBuffer);
         if (validated === null) {
           return {
             ...ctx,
@@ -218,31 +245,34 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
           ...ctx,
           current: {
             state: 'confirmation',
-            recipientType: current.recipientType,
-            recipientPhone: current.recipientPhone || userOwnPhone,
+            recipientType: (current as any).recipientType,
+            recipientPhone: (current as any).recipientPhone || userOwnPhone,
             amount: validated
           },
           history: [...history, current]
         };
       }
-      if (/^[0-9]$/.test(key) && current.buffer.length < 7) {
+      if (/^[0-9]$/.test(key) && amountBuffer.length < 7) {
         return {
           ...ctx,
           current: {
             ...current,
-            buffer: current.buffer + key,
+            buffer: amountBuffer + key,
             error: undefined
           }
         };
       }
-      return ctx;
+      return {
+        ...ctx,
+        current: { ...current, error: t.errorInvalidInput }
+      };
     }
 
     case 'confirmation': {
       if (current.message) {
         return {
           ...ctx,
-          current: { state: 'dailing', buffer: '' },
+          current: { state: 'dialing', buffer: '' },
           history: []
         };
       }
@@ -264,15 +294,20 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
       if (key === '2') {
         return {
           ...ctx,
-          current: { state: 'dailing', buffer: '' },
+          current: { state: 'dialing', buffer: '' },
           history: []
         };
       }
-      return ctx;
+      return {
+        ...ctx,
+        current: { ...current, error: t.errorInvalidChoice }
+      };
     }
 
-
     default:
-      return ctx;
+      return {
+        ...ctx,
+        current: { ...current, error: t.errorInvalidInput }
+      };
   }
 }
