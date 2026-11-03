@@ -75,19 +75,19 @@ function renderLCD(phone: PhoneState): void {
     case 'balance-screen':
       output = current.error
         ? `${current.error}\n\n[Back]`
-        : `${t.balanceTitle}\n${t.balanceAmount(current.balance)}\n\n[Back]`;
+        : `${t.balanceTitle}\n${t.balanceAmount(current.balance)}\n\n0. ${t.backOption}\n> ${(current as any).buffer || ''}`;
       break;
 
     case 'enter-phone-number':
       output = current.error
         ? `${current.error}\n\n[Back]`
-        : `${t.enterPhonePrompt}\n> ${current.buffer || ''}`;
+        : `${t.enterPhonePrompt}\n0. ${t.backOption}\n> ${current.buffer || ''}`;
       break;
 
     case 'enter-amount':
       output = current.error
         ? `${current.error}\n\n[Back]`
-        : `${t.enterAmountPrompt}\n> KES ${current.buffer || ''}`;
+        : `${t.enterAmountPrompt}\n0. ${t.backOption}\n> KES ${current.buffer || ''}`;
       break;
 
     case 'confirmation':
@@ -95,7 +95,7 @@ function renderLCD(phone: PhoneState): void {
         ? `${current.error}\n\n[Back]`
         : current.message
           ? `${current.message}\n\n[Back]`
-          : t.confirmPrompt(current.amount, current.recipientPhone);
+          : `${t.confirmPrompt(current.amount, current.recipientPhone)}\n> ${(current as any).buffer || ''}`;
       break;
   }
 
@@ -140,6 +140,10 @@ function logUserInteraction(
   if (menu) {
     if (key === 'ok' || key === 'call') {
       const typedKey = (prevState as any).buffer || '';
+      if (typedKey === '0') {
+        recordSessionLog(phoneId, prevTitle, `Navigated Back to ${getPageTitle(nextState.state)} via [0] + [OK]`, '0 (Back)', 'ACTIVE');
+        return;
+      }
       if (nextState.error) {
         recordSessionLog(phoneId, prevTitle, 'Invalid Menu Option Attempted', typedKey || '[Empty]', 'ERROR');
       } else {
@@ -157,6 +161,10 @@ function logUserInteraction(
   if (prevState.state === 'enter-phone-number') {
     if (key === 'ok' || key === 'call') {
       const phoneBuffer = (prevState as any).buffer || '';
+      if (phoneBuffer === '0') {
+        recordSessionLog(phoneId, 'Enter Phone Number', `Navigated Back to ${getPageTitle(nextState.state)} via [0] + [OK]`, '0 (Back)', 'ACTIVE');
+        return;
+      }
       if (nextState.error) {
         recordSessionLog(phoneId, 'Enter Phone Number', 'Invalid Phone Number (10 digits starting 07/01)', phoneBuffer || '[Empty]', 'ERROR');
       } else {
@@ -170,6 +178,10 @@ function logUserInteraction(
   if (prevState.state === 'enter-amount') {
     if (key === 'ok' || key === 'call') {
       const amtBuffer = (prevState as any).buffer || '';
+      if (amtBuffer === '0') {
+        recordSessionLog(phoneId, 'Enter Amount', `Navigated Back to ${getPageTitle(nextState.state)} via [0] + [OK]`, '0 (Back)', 'ACTIVE');
+        return;
+      }
       if (nextState.error) {
         recordSessionLog(phoneId, 'Enter Amount', nextState.error, `KES ${amtBuffer || 0}`, 'ERROR');
       } else {
@@ -189,6 +201,10 @@ function logUserInteraction(
 
     if (key === 'ok' || key === 'call') {
       const choice = (prevState as any).buffer || '';
+      if (choice === '0') {
+        recordSessionLog(phoneId, 'Confirmation', `Navigated Back to ${getPageTitle(nextState.state)} via [0] + [OK]`, '0 (Back)', 'ACTIVE');
+        return;
+      }
       if (choice === '1' && (nextState as any).message) {
         const amt = (nextState as any).amount;
         const phone = (nextState as any).recipientPhone;
@@ -203,9 +219,16 @@ function logUserInteraction(
   }
 
   //  Balance screen back navigation
-  if (prevState.state === 'balance-screen' && key === 'back') {
-    recordSessionLog(phoneId, 'Balance Screen', 'Returned to Main Menu', '[Back]', 'ACTIVE');
-    return;
+  if (prevState.state === 'balance-screen') {
+    if (key === 'ok' || key === 'call') {
+      const buf = (prevState as any).buffer || '';
+      recordSessionLog(phoneId, 'Balance Screen', `Navigated Back to ${getPageTitle(nextState.state)} via [0] + [OK]`, buf || '0 (Back)', 'ACTIVE');
+      return;
+    }
+    if (key === 'back') {
+      recordSessionLog(phoneId, 'Balance Screen', 'Returned to Main Menu', '[Back]', 'ACTIVE');
+      return;
+    }
   }
 
   //  General Back navigation across screens

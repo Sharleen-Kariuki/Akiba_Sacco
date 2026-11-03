@@ -101,6 +101,25 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
         };
       }
 
+      // Backward navigation via key '0' then 'OK'
+      if (typedKey === '0') {
+        if (history.length > 0) {
+          const nextHistory = [...history];
+          const previousState = nextHistory.pop()!;
+          return {
+            ...ctx,
+            current: { ...previousState, buffer: '', error: undefined },
+            history: nextHistory
+          };
+        } else {
+          return {
+            ...ctx,
+            current: { state: 'dialing', buffer: '' },
+            history: []
+          };
+        }
+      }
+
       const selectedOption = menu.options[typedKey];
       if (selectedOption) {
         const nextState = selectedOption.onSelect(ctx);
@@ -179,11 +198,27 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
     }
 
     case 'balance-screen': {
-      if (key === 'ok') {
+      const buffer = (current as any).buffer || '';
+      if (key === 'ok' || key === 'call') {
+        if (history.length > 0) {
+          const nextHistory = [...history];
+          const previousState = nextHistory.pop()!;
+          return {
+            ...ctx,
+            current: { ...previousState, buffer: '', error: undefined },
+            history: nextHistory
+          };
+        }
         return {
           ...ctx,
           current: { state: 'main-menu', buffer: '' },
-          history: history.length > 0 ? history.slice(0, -1) : []
+          history: []
+        };
+      }
+      if (key === '0') {
+        return {
+          ...ctx,
+          current: { ...current, buffer: '0', error: undefined }
         };
       }
       return {
@@ -194,7 +229,19 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
 
     case 'enter-phone-number': {
       const phoneBuffer = (current as any).buffer || '';
-      if (key === 'ok') {
+      if (key === 'ok' || key === 'call') {
+        // Backward navigation: type 0 then OK
+        if (phoneBuffer === '0') {
+          if (history.length > 0) {
+            const nextHistory = [...history];
+            const previousState = nextHistory.pop()!;
+            return {
+              ...ctx,
+              current: { ...previousState, buffer: '', error: undefined },
+              history: nextHistory
+            };
+          }
+        }
         if (isValidKenyanPhone(phoneBuffer)) {
           return {
             ...ctx,
@@ -227,7 +274,19 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
 
     case 'enter-amount': {
       const amountBuffer = (current as any).buffer || '';
-      if (key === 'ok') {
+      if (key === 'ok' || key === 'call') {
+        // Backward navigation: type 0 then OK
+        if (amountBuffer === '0') {
+          if (history.length > 0) {
+            const nextHistory = [...history];
+            const previousState = nextHistory.pop()!;
+            return {
+              ...ctx,
+              current: { ...previousState, buffer: '', error: undefined },
+              history: nextHistory
+            };
+          }
+        }
         const validated = isValidAmount(amountBuffer);
         if (validated === null) {
           return {
@@ -247,7 +306,8 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
             state: 'confirmation',
             recipientType: (current as any).recipientType,
             recipientPhone: (current as any).recipientPhone || userOwnPhone,
-            amount: validated
+            amount: validated,
+            buffer: ''
           },
           history: [...history, current]
         };
@@ -276,31 +336,56 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
           history: []
         };
       }
-      if (key === '1') {
-        const newBalance = userBalance - current.amount;
+      const choice = (current as any).buffer || '';
+      if (key === 'ok' || key === 'call') {
+        // Backward navigation: type 0 then OK
+        if (choice === '0') {
+          if (history.length > 0) {
+            const nextHistory = [...history];
+            const previousState = nextHistory.pop()!;
+            return {
+              ...ctx,
+              current: { ...previousState, buffer: '', error: undefined },
+              history: nextHistory
+            };
+          }
+        }
+        if (choice === '1') {
+          const newBalance = userBalance - current.amount;
+          return {
+            ...ctx,
+            userBalance: newBalance,
+            current: {
+              state: 'confirmation',
+              recipientType: current.recipientType,
+              recipientPhone: current.recipientPhone,
+              amount: current.amount,
+              message: t.successWithdraw(current.amount, current.recipientPhone)
+            },
+            history: []
+          };
+        }
+        if (choice === '2') {
+          return {
+            ...ctx,
+            current: { state: 'dialing', buffer: '' },
+            history: []
+          };
+        }
         return {
           ...ctx,
-          userBalance: newBalance,
-          current: {
-            state: 'confirmation',
-            recipientType: current.recipientType,
-            recipientPhone: current.recipientPhone,
-            amount: current.amount,
-            message: t.successWithdraw(current.amount, current.recipientPhone)
-          },
-          history: []
+          current: { ...current, error: t.errorInvalidChoice }
         };
       }
-      if (key === '2') {
+      if (/^[0-2]$/.test(key)) {
         return {
           ...ctx,
-          current: { state: 'dialing', buffer: '' },
-          history: []
+          current: { ...current, buffer: key, error: undefined }
         };
       }
       return {
         ...ctx,
-        current: { ...current, error: t.errorInvalidChoice }
+        current: { ...current, error: t.errorInvalidInput }
       };
     }
 

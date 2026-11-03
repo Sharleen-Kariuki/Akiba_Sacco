@@ -87,6 +87,9 @@ export function formatMenu(menu, lang, buffer, error) {
         const label = opt.label[lang] || opt.label.en;
         lines.push(`${opt.key}. ${label}`);
     }
+    if (menu.showBack) {
+        lines.push(`0. ${lang === 'sw' ? 'Rudi' : 'Back'}`);
+    }
     // Display user input buffer
     if (buffer && buffer.length > 0) {
         lines.push(`> ${buffer}`);
@@ -94,11 +97,7 @@ export function formatMenu(menu, lang, buffer, error) {
     else {
         lines.push('> _');
     }
-    let text = lines.join('\n');
-    if (menu.showBack) {
-        text += '\n[Back]';
-    }
-    return text;
+    return lines.join('\n');
 }
 /**
  * Programmatically register a new menu
