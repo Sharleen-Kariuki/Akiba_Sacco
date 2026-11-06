@@ -3,6 +3,39 @@ const sessionStore = new Map();
 const sessionList = [];
 const sessionRowMap = new Map();
 const openDrawerSessionIds = new Set();
+// In-memory transaction store (capped at 50 most-recent entries)
+const transactionStore = [];
+const MAX_TXN_HISTORY = 50;
+let txnCounter = 1000;
+// Records a transaction
+export function recordTransaction(phone, amount, phoneId) {
+    txnCounter++;
+    const now = new Date();
+    const dateStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const masked = phone.length >= 7
+        ? `${phone.slice(0, 4)}***${phone.slice(-3)}`
+        : phone;
+    transactionStore.unshift({
+        ref: `TXN-${txnCounter}`,
+        date: dateStr,
+        maskedPhone: masked,
+        amount,
+        phoneId
+    });
+    // Enforce rolling cap: drop oldest beyond limit
+    if (transactionStore.length > MAX_TXN_HISTORY) {
+        transactionStore.length = MAX_TXN_HISTORY;
+    }
+}
+/**
+ * Returns recorded transactions, optionally filtered by phone
+ */
+export function getTransactions(phoneId) {
+    if (phoneId) {
+        return transactionStore.filter((t) => !t.phoneId || t.phoneId === phoneId);
+    }
+    return transactionStore;
+}
 const activeSessions = {
     en: null,
     sw: null,
@@ -320,68 +353,10 @@ export function clearLogs() {
     openDrawerSessionIds.clear();
     activeSessions.en = null;
     activeSessions.sw = null;
+    transactionStore.length = 0;
     if (dtInstance) {
         try {
             dtInstance.clear().draw();
-        }
-        catch {
-            renderNativeTable();
-        }
-    }
-    else {
-        renderNativeTable();
-    }
-    updateStatsRibbon();
-    updatePageFilterDropdown();
-}
-/**
- * Seeds an initial demonstration session so the table is immediately populated upon first load
- */
-function seedInitialDemoSession() {
-    if (sessionList.length > 0)
-        return;
-    const demoSessionId = 'USSD-1042';
-    const demoSession = {
-        sessionId: demoSessionId,
-        phone: 'en',
-        startTime: '10:00:15',
-        lastActive: '10:00:42',
-        status: 'SUCCESS',
-        transactedValue: 15250,
-        events: [
-            {
-                step: 1,
-                timestamp: '10:00:15',
-                page: 'Dialer',
-                action: 'Session Initiated (*144#)',
-                value: '*144#',
-                status: 'ACTIVE',
-            },
-            {
-                step: 2,
-                timestamp: '10:00:24',
-                page: 'Main Menu',
-                action: 'Selected Option 1: Balance Enquiry',
-                value: '1',
-                status: 'ACTIVE',
-            },
-            {
-                step: 3,
-                timestamp: '10:00:42',
-                page: 'Balance Screen',
-                action: 'Account Balance Viewed (KES 15,250.00)',
-                value: 'KES 15,250.00',
-                status: 'SUCCESS',
-            },
-        ],
-    };
-    sessionStore.set(demoSessionId, demoSession);
-    sessionList.push(demoSession);
-    if (dtInstance) {
-        try {
-            const row = dtInstance.row.add(generateRowData(demoSession));
-            sessionRowMap.set(demoSessionId, row);
-            dtInstance.draw(false);
         }
         catch {
             renderNativeTable();
@@ -437,8 +412,12 @@ export function initDataTable() {
         console.warn('DataTables initialization note:', err);
         dtInstance = null;
     }
-    // 2. Pre-seed demo session so the table is immediately populated upon page load
-    seedInitialDemoSession();
+    // 2. Initial table and ribbon stats render (no dummy data)
+    updateStatsRibbon();
+    updatePageFilterDropdown();
+    if (!dtInstance) {
+        renderNativeTable();
+    }
     // 3. Drawer Toggle Click Listener (Event Delegation on #ussd-table)
     const tableEl = document.getElementById('ussd-table');
     tableEl?.addEventListener('click', (event) => {

@@ -37,6 +37,53 @@ const sessionList: USSDSession[] = [];
 const sessionRowMap = new Map<string, any>();
 const openDrawerSessionIds = new Set<string>();
 
+// ─── Transaction Store for Statement Screen ───────────────────────────────────
+export interface TransactionRecord {
+  ref: string;          // e.g. TXN-5842
+  date: string;         // e.g. 05/11 14:32
+  maskedPhone: string;  // e.g. 0712***789
+  amount: number;       // e.g. 500
+  phoneId?: Language;
+}
+
+// In-memory transaction store (capped at 50 most-recent entries)
+const transactionStore: TransactionRecord[] = [];
+const MAX_TXN_HISTORY = 50;
+
+let txnCounter = 1000;
+
+// Records a transaction
+export function recordTransaction(phone: string, amount: number, phoneId?: Language): void {
+  txnCounter++;
+  const now = new Date();
+  const dateStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const masked = phone.length >= 7
+    ? `${phone.slice(0, 4)}***${phone.slice(-3)}`
+    : phone;
+  transactionStore.unshift({
+    ref: `TXN-${txnCounter}`,
+    date: dateStr,
+    maskedPhone: masked,
+    amount,
+    phoneId
+  });
+  // Enforce rolling cap: drop oldest beyond limit
+  if (transactionStore.length > MAX_TXN_HISTORY) {
+    transactionStore.length = MAX_TXN_HISTORY;
+  }
+}
+
+/**
+ * Returns recorded transactions, optionally filtered by phone
+ */
+export function getTransactions(phoneId?: Language): TransactionRecord[] {
+  if (phoneId) {
+    return transactionStore.filter((t) => !t.phoneId || t.phoneId === phoneId);
+  }
+  return transactionStore;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Active session tracking per phone
 interface PhoneSessionInfo {
   sessionId: string;
@@ -395,71 +442,11 @@ export function clearLogs(): void {
   openDrawerSessionIds.clear();
   activeSessions.en = null;
   activeSessions.sw = null;
+  transactionStore.length = 0;
 
   if (dtInstance) {
     try {
       dtInstance.clear().draw();
-    } catch {
-      renderNativeTable();
-    }
-  } else {
-    renderNativeTable();
-  }
-
-  updateStatsRibbon();
-  updatePageFilterDropdown();
-}
-
-/**
- * Seeds an initial demonstration session so the table is immediately populated upon first load
- */
-function seedInitialDemoSession(): void {
-  if (sessionList.length > 0) return;
-
-  const demoSessionId = 'USSD-1042';
-  const demoSession: USSDSession = {
-    sessionId: demoSessionId,
-    phone: 'en',
-    startTime: '10:00:15',
-    lastActive: '10:00:42',
-    status: 'SUCCESS',
-    transactedValue: 15250,
-    events: [
-      {
-        step: 1,
-        timestamp: '10:00:15',
-        page: 'Dialer',
-        action: 'Session Initiated (*144#)',
-        value: '*144#',
-        status: 'ACTIVE',
-      },
-      {
-        step: 2,
-        timestamp: '10:00:24',
-        page: 'Main Menu',
-        action: 'Selected Option 1: Balance Enquiry',
-        value: '1',
-        status: 'ACTIVE',
-      },
-      {
-        step: 3,
-        timestamp: '10:00:42',
-        page: 'Balance Screen',
-        action: 'Account Balance Viewed (KES 15,250.00)',
-        value: 'KES 15,250.00',
-        status: 'SUCCESS',
-      },
-    ],
-  };
-
-  sessionStore.set(demoSessionId, demoSession);
-  sessionList.push(demoSession);
-
-  if (dtInstance) {
-    try {
-      const row = dtInstance.row.add(generateRowData(demoSession));
-      sessionRowMap.set(demoSessionId, row);
-      dtInstance.draw(false);
     } catch {
       renderNativeTable();
     }
@@ -515,8 +502,12 @@ export function initDataTable(): void {
     dtInstance = null;
   }
 
-  // 2. Pre-seed demo session so the table is immediately populated upon page load
-  seedInitialDemoSession();
+  // 2. Initial table and ribbon stats render (no dummy data)
+  updateStatsRibbon();
+  updatePageFilterDropdown();
+  if (!dtInstance) {
+    renderNativeTable();
+  }
 
   // 3. Drawer Toggle Click Listener (Event Delegation on #ussd-table)
   const tableEl = document.getElementById('ussd-table');

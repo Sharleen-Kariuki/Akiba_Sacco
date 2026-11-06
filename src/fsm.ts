@@ -1,6 +1,7 @@
 import { ScreenState, KeypadKey, Language, AppContext } from './types.js';
 import { dictonary } from './dictionary.js';
 import { getMenu } from './menus.js';
+import { getTransactions } from './logger.js';
 
 export type { AppContext } from './types.js';
 export { renderKeypad, renderAllKeypads } from './keypad.js';
@@ -21,11 +22,14 @@ export function isValidKenyanPhone(phone: string): boolean {
   return /^(07|01)[0-9]{8}$/.test(phone);
 }
 
-// Amount validator: whole positive number >= 50
+// Amount validator: whole positive number >= 50 and <= 70,000 (CBK mobile money daily cap)
+const MIN_WITHDRAWAL = 50;
+const MAX_WITHDRAWAL = 70_000;
+
 export function isValidAmount(amountStr: string): number | null {
   if (!/^[1-9][0-9]*$/.test(amountStr)) return null;
   const num = parseInt(amountStr, 10);
-  return num >= 50 ? num : null;
+  return num >= MIN_WITHDRAWAL && num <= MAX_WITHDRAWAL ? num : null;
 }
 
 export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
@@ -43,7 +47,7 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
 
   // If in confirmation state with success message, any key resets to dialer
   if (current.state === 'confirmation' && current.message) {
-    if (key === 'back' || key === 'ok' || key === 'call' || key === '1' || key === '2') {
+    if (key === 'back' || key === 'ok' || key === 'call' || key === 'soft-left' || key === '1' || key === '2') {
       return {
         ...ctx,
         current: { state: 'dialing', buffer: '' },
@@ -52,7 +56,21 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
     }
   }
 
-  // Global Back Button Handling
+  // Left Softkey (Menu / Select / OK / Next)
+  if (key === 'soft-left') {
+    if (current.state === 'dialing' && (!current.buffer || current.buffer.length === 0)) {
+      // "Menu" on idle standby screen opens the USSD main menu
+      return {
+        ...ctx,
+        current: { state: 'main-menu', buffer: '' },
+        history: [{ state: 'dialing', buffer: '' }]
+      };
+    }
+    // On all other states or when dial buffer has input, soft-left acts as 'ok' / Select
+    key = 'ok';
+  }
+
+  // Global Back / Exit / Clear / Go to Handling
   if (key === 'back') {
     // 1. If an error is currently displayed, Back dismisses the error
     if ('error' in current && current.error) {
@@ -62,7 +80,15 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
       };
     }
 
-    // 2. If in an input screen OR menu with buffered characters, Back acts as Backspace
+    // 2. If on dialing standby with empty buffer, Right Softkey is "Go to": prefill *144#
+    if (current.state === 'dialing' && (!current.buffer || current.buffer.length === 0)) {
+      return {
+        ...ctx,
+        current: { state: 'dialing', buffer: '*144#', error: undefined }
+      };
+    }
+
+    // 3. If in an input screen OR menu with buffered characters, Back acts as "Clear" (Backspace)
     if ('buffer' in current && typeof current.buffer === 'string' && current.buffer.length > 0) {
       return {
         ...ctx,
@@ -70,7 +96,16 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
       };
     }
 
-    // 3. Otherwise, pop history stack to return to the previous screen
+    // 4. If on the USSD main-menu with empty buffer, Right Softkey is "Exit": terminates USSD session
+    if (current.state === 'main-menu') {
+      return {
+        ...ctx,
+        current: { state: 'dialing', buffer: '' },
+        history: []
+      };
+    }
+
+    // 5. Otherwise, pop history stack to return to the previous screen
     if (history.length > 0) {
       const nextHistory = [...history];
       const previousState = nextHistory.pop()!;
@@ -172,11 +207,11 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
     case 'dialing': {
       const dialBuffer = (current as any).buffer || '';
       if (key === 'call' || key === 'ok') {
-        if (dialBuffer === '*144#') {
+        if (!dialBuffer || dialBuffer === '*144#') {
           return {
             ...ctx,
             current: { state: 'main-menu', buffer: '' },
-            history: [current]
+            history: [{ state: 'dialing', buffer: '' }]
           };
         } else {
           return {
@@ -387,6 +422,31 @@ export function handleKeypadEvent(ctx: AppContext, key: KeypadKey): AppContext {
         ...ctx,
         current: { ...current, error: t.errorInvalidInput }
       };
+    }
+
+    case 'statement-screen': {
+      const page = (current as any).page || 0;
+      const txns = getTransactions(language);
+      const TXNS_PER_PAGE = 1;
+      const totalPages = Math.ceil(txns.length / TXNS_PER_PAGE) || 1;
+
+      // 9 (or OK/Call) = scroll to next page (cycles through all pages: 1 -> 2 -> 3 -> 1)
+      if (key === '9' || key === 'ok' || key === 'call') {
+        const nextPage = totalPages > 1 ? (page + 1) % totalPages : 0;
+        return { ...ctx, current: { ...current, page: nextPage } };
+      }
+
+      // 0 = navigate back to previous menu
+      if (key === '0') {
+        if (history.length > 0) {
+          const nextHistory = [...history];
+          const previousState = nextHistory.pop()!;
+          return { ...ctx, current: { ...previousState, buffer: '', error: undefined }, history: nextHistory };
+        }
+        return { ...ctx, current: { state: 'main-menu', buffer: '' }, history: [] };
+      }
+
+      return ctx;
     }
 
     default:

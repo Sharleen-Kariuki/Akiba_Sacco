@@ -1,22 +1,15 @@
 import { recordSessionLog } from './logger.js';
-const INACTIVITY_DELAY_MS = 30 * 1000; // 30 seconds
-const POPUP_DURATION_SECONDS = 5; // 5 seconds
+// Configurable session timeout: 5s, 10s, or 20s (default 10s)
+let inactivityDelaySeconds = 10;
+let INACTIVITY_DELAY_MS = inactivityDelaySeconds * 1000;
 const phoneTimeouts = {
     en: {
         phoneId: 'en',
         inactivityTimer: null,
-        popupTimer: null,
-        countdownInterval: null,
-        isPopupActive: false,
-        popupElement: null,
     },
     sw: {
         phoneId: 'sw',
         inactivityTimer: null,
-        popupTimer: null,
-        countdownInterval: null,
-        isPopupActive: false,
-        popupElement: null,
     },
 };
 let timeoutOptions = null;
@@ -47,133 +40,98 @@ export function injectStatusBar() {
 export function initSessionTimeout(options) {
     timeoutOptions = options;
     injectStatusBar();
+    initTimeoutToggleUI();
 }
 // Backward-compatibility alias
 export const setupSessionTimeout = initSessionTimeout;
 /**
- * Notifies user activity on a specific phone to restart the 30-second timer
+ * Sets session timeout to 5, 10, or 20 seconds
+ */
+export function setSessionTimeoutSeconds(seconds) {
+    if (seconds !== 5 && seconds !== 10 && seconds !== 20)
+        return;
+    inactivityDelaySeconds = seconds;
+    INACTIVITY_DELAY_MS = seconds * 1000;
+    // Restart active timers on phones currently in a session
+    ['en', 'sw'].forEach((phoneId) => {
+        if (timeoutOptions?.isSessionActive(phoneId)) {
+            notifyActivity(phoneId);
+        }
+    });
+    // Update badge UI
+    const badge = document.getElementById('timeout-badge');
+    if (badge) {
+        badge.textContent = `Active: ${seconds}s`;
+    }
+}
+/**
+ * Returns currently active session timeout in seconds
+ */
+export function getSessionTimeoutSeconds() {
+    return inactivityDelaySeconds;
+}
+/**
+ * Initializes outside toggle buttons (5s, 10s, 20s)
+ */
+export function initTimeoutToggleUI() {
+    const pillButtons = document.querySelectorAll('.btn-timeout-pill');
+    pillButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const seconds = parseInt(btn.getAttribute('data-timeout') || '10', 10);
+            setSessionTimeoutSeconds(seconds);
+            pillButtons.forEach((b) => {
+                b.classList.remove('active');
+                b.setAttribute('aria-checked', 'false');
+            });
+            btn.classList.add('active');
+            btn.setAttribute('aria-checked', 'true');
+        });
+    });
+}
+/**
+ * Notifies user activity on a specific phone to restart the timeout timer
  */
 export function notifyActivity(phoneId) {
     const state = phoneTimeouts[phoneId];
     if (!state)
-        return;
-    // If popup is currently active, activity is governed by the popup response
-    if (state.isPopupActive)
         return;
     // Clear existing inactivity timer
     if (state.inactivityTimer) {
         clearTimeout(state.inactivityTimer);
         state.inactivityTimer = null;
     }
-    // Only start the 30s timeout if the phone currently has an active session
+    // Only start the timeout if the phone currently has an active session
     if (timeoutOptions?.isSessionActive(phoneId)) {
         state.inactivityTimer = setTimeout(() => {
-            showTimeoutPopup(phoneId);
+            dismissTimeoutPopupAndReset(phoneId);
         }, INACTIVITY_DELAY_MS);
     }
 }
 /**
- * Checks if the "Are you there?" popup is currently displayed for a phone
+ * Checks if a timeout alert is active (kept for backward compatibility, returns false as popups are disabled)
  */
-export function isTimeoutPopupOpen(phoneId) {
-    return phoneTimeouts[phoneId]?.isPopupActive || false;
+export function isTimeoutPopupOpen(_phoneId) {
+    return false;
 }
-/**
- * Displays the 5-second "Are you there?" alert popup on the phone's LCD screen
- */
-function showTimeoutPopup(phoneId) {
-    const state = phoneTimeouts[phoneId];
-    if (!state || state.isPopupActive)
-        return;
-    const phoneCasing = document.getElementById(`phone-${phoneId}`);
-    const lcdViewport = phoneCasing?.querySelector('.lcd-viewport');
-    if (!lcdViewport)
-        return;
-    state.isPopupActive = true;
-    // Bilingual text support
-    const alertText = phoneId === 'sw' ? 'Upo hapo?' : 'Are you there?';
-    let secondsRemaining = POPUP_DURATION_SECONDS;
-    // Create popup dialog
-    const popup = document.createElement('div');
-    popup.className = 'timeout-popup';
-    popup.setAttribute('role', 'alertdialog');
-    popup.setAttribute('aria-label', alertText);
-    popup.innerHTML = `
-    <div class="popup-title">${alertText}</div>
-    <div class="popup-timer">(${secondsRemaining}s)</div>
-    <button type="button" class="popup-btn-ok">[OK]</button>
-  `;
-    // Clicking the on-screen [OK] button continues the process
-    const okBtn = popup.querySelector('.popup-btn-ok');
-    okBtn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dismissTimeoutPopupAndContinue(phoneId);
-    });
-    lcdViewport.appendChild(popup);
-    state.popupElement = popup;
-    // Log timeout alert
-    recordSessionLog(phoneId, 'Timeout Alert', 'Inactivity Warning ("Are you there?")', '5s Countdown', 'ACTIVE');
-    // 1-second countdown interval to update the display
-    state.countdownInterval = setInterval(() => {
-        secondsRemaining--;
-        const timerEl = popup.querySelector('.popup-timer');
-        if (timerEl) {
-            timerEl.textContent = `(${secondsRemaining}s)`;
-        }
-    }, 1000);
-    // 5-second expiration timer: if no OK is pressed, reset to dialing state
-    state.popupTimer = setTimeout(() => {
-        dismissTimeoutPopupAndReset(phoneId);
-    }, POPUP_DURATION_SECONDS * 1000);
-}
-/**
- * User confirmed presence by pressing OK: dismiss popup and continue process
- */
 export function dismissTimeoutPopupAndContinue(phoneId) {
-    const state = phoneTimeouts[phoneId];
-    if (!state || !state.isPopupActive)
-        return false;
-    cleanupPopup(state);
-    // Log confirmation
-    recordSessionLog(phoneId, 'Timeout Alert', 'Presence Confirmed by User [OK]', 'Session Resumed', 'ACTIVE');
-    // Restart 30-second timer to continue the active session
     notifyActivity(phoneId);
     return true;
 }
 /**
- * Timeout expired without OK: dismiss popup and reset phone to dialing state
+ * Timeout expired: logs audit event and triggers reset to dialer with pure text display
  */
 export function dismissTimeoutPopupAndReset(phoneId) {
     const state = phoneTimeouts[phoneId];
     if (!state)
         return;
-    cleanupPopup(state);
-    // Log timeout expiry
-    recordSessionLog(phoneId, 'Timeout Alert', 'Session Timed Out (Inactivity Expiry)', 'Auto-Reset to Dialer', 'TIMEOUT');
-    // Trigger state reset callback to return to dialing state
-    if (timeoutOptions?.onResetToDialing) {
-        timeoutOptions.onResetToDialing(phoneId);
-    }
-}
-/**
- * Helper to remove popup elements and clear interval/timer handles
- */
-function cleanupPopup(state) {
-    state.isPopupActive = false;
     if (state.inactivityTimer) {
         clearTimeout(state.inactivityTimer);
         state.inactivityTimer = null;
     }
-    if (state.popupTimer) {
-        clearTimeout(state.popupTimer);
-        state.popupTimer = null;
-    }
-    if (state.countdownInterval) {
-        clearInterval(state.countdownInterval);
-        state.countdownInterval = null;
-    }
-    if (state.popupElement) {
-        state.popupElement.remove();
-        state.popupElement = null;
+    // Log timeout expiry
+    recordSessionLog(phoneId, 'Timeout Alert', `Session Timed Out (${inactivityDelaySeconds}s Inactivity Expiry)`, 'Auto-Reset to Dialer', 'TIMEOUT');
+    // Trigger state reset callback to return to dialing state with text-based message
+    if (timeoutOptions?.onResetToDialing) {
+        timeoutOptions.onResetToDialing(phoneId);
     }
 }

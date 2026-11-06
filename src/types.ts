@@ -25,9 +25,18 @@ export interface Translations {
     errorInvalidInput: string;
     errorInvalidChoice: string;
     backOption: string;
+    footerMenu: string;
+    footerGoto: string;
+    footerExit: string;
+    footerSelect: string;
+    footerOk: string;
+    footerClear: string;
+    footerBack: string;
+    footerNext: string;
+    footerCall: string;
 }
 
-export type KeypadKey = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '*' | '0' | '#' | 'call' | 'end' | 'back' | 'ok';
+export type KeypadKey = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '*' | '0' | '#' | 'call' | 'end' | 'back' | 'ok' | 'soft-left';
 
 export type DailScreenState = {
     state: 'dialing';
@@ -85,6 +94,13 @@ export type GenericMenuState = {
     [key: string]: any;
 };
 
+export type StatementScreenState = {
+    state: 'statement-screen';
+    balance: number;
+    page: number;        // 0-indexed current page
+    error?: string;
+}
+
 export type ScreenState =
     | DailScreenState
     | MainMenuState
@@ -93,7 +109,8 @@ export type ScreenState =
     | EnterPhoneNumberState
     | EnterAmountState
     | ConfirmationState
-    | GenericMenuState;
+    | GenericMenuState
+    | StatementScreenState;
 
 export interface AppContext {
     current: ScreenState;

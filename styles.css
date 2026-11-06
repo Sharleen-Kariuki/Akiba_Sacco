@@ -20,6 +20,110 @@ body {
   gap: 36px;
 }
 
+/* --- Outside Emulator Controls Bar --- */
+
+
+.controls-bar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.controls-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  color: #ffffff;
+}
+
+.controls-bar-title i {
+  color: #00d2be;
+  font-size: 16px;
+}
+
+.controls-bar-subtitle {
+  font-size: 11px;
+  color: #8fa0b0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.timeout-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #10161a;
+  border: 1px solid #25313a;
+  border-radius: 24px;
+  padding: 5px 12px;
+  flex-wrap: wrap;
+}
+
+.timeout-toggle-label {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  color: #cbd7e2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeout-toggle-label i {
+  color: #f5a623;
+}
+
+.timeout-pill-group {
+  display: inline-flex;
+  gap: 4px;
+  background: #1e262c;
+  padding: 3px;
+  border-radius: 18px;
+  border: 1px solid #2f3e49;
+}
+
+.btn-timeout-pill {
+  appearance: none;
+  background: transparent;
+  color: #9cb0c1;
+  border: none;
+  padding: 4px 12px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.btn-timeout-pill:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-timeout-pill.active {
+  background: #18d570;
+  color: #081a17;
+  box-shadow: 0 2px 8px rgba(0, 210, 190, 0.45);
+}
+
+.timeout-badge {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  font-weight: bold;
+  color: #00d2be;
+  background: rgba(0, 210, 190, 0.12);
+  border: 1px solid rgba(0, 210, 190, 0.35);
+  padding: 3px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
 .phones-container {
   display: flex;
   flex-direction: row;
@@ -145,6 +249,55 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   overflow: hidden;
+  font-size: 10.5px;
+  line-height: 13px;
+}
+
+/* Nokia 1280 Bottom Softkey Navigation Bar */
+.screen-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding-top: 2px;
+  font-size: 9.5px;
+  font-weight: bold;
+  color: #0b0f0c;
+  border-top: 1px solid rgba(11, 15, 12, 0.4);
+  margin-top: auto;
+  user-select: none;
+  line-height: 12px;
+}
+
+.footer-left {
+  text-align: left;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.footer-center {
+  text-align: center;
+  flex: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.footer-right {
+  text-align: right;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.footer-left:active,
+.footer-right:active,
+.footer-center:active {
+  opacity: 0.6;
 }
 
 /* Inactivity Timeout Popup (30s inactivity -> 5s alert) */

@@ -18,6 +18,7 @@
     "src/keypad.ts",
     "src/logger.ts",
     "src/menus.ts",
+    "src/phone.ts",
     "src/timeout.ts",
     "src/types.ts"
   ]

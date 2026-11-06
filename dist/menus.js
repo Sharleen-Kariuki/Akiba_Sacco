@@ -28,7 +28,19 @@ export const MENUS = {
                     state: 'withdraw-menu',
                     buffer: ''
                 })
-            }
+            },
+            '3': {
+                key: '3',
+                label: {
+                    en: 'Statements',
+                    sw: 'Reporti'
+                },
+                onSelect: (ctx) => ({
+                    state: 'statement-screen',
+                    balance: ctx.userBalance,
+                    page: 0
+                })
+            },
         }
     },
     'withdraw-menu': {

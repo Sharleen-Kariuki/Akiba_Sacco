@@ -10,26 +10,155 @@ import {
 } from './timeout.js';
 import { renderAllKeypads } from './keypad.js';
 import { getMenu, formatMenu } from './menus.js';
-import { initDataTable, recordSessionLog, startNewSession } from './logger.js';
+import { initDataTable, recordSessionLog, startNewSession, recordTransaction, getTransactions } from './logger.js';
+import { renderPhoneHandsets } from './phone.js';
 
 interface PhoneState {
   lang: Language;
   ctx: AppContext;
   screenEl: HTMLDivElement | null;
+  footerEl: HTMLDivElement | null;
 }
+
+// Dynamically instantiate the dual phones from the HTML template
+const renderedPhones = renderPhoneHandsets();
 
 const phones: Record<Language, PhoneState> = {
   en: {
     lang: 'en',
     ctx: { ...createInitialContext(), language: 'en' },
-    screenEl: document.getElementById('screen-content-en') as HTMLDivElement | null,
+    screenEl: renderedPhones.en.screenEl,
+    footerEl: renderedPhones.en.footerEl,
   },
   sw: {
     lang: 'sw',
     ctx: { ...createInitialContext(), language: 'sw' },
-    screenEl: document.getElementById('screen-content-sw') as HTMLDivElement | null,
+    screenEl: renderedPhones.sw.screenEl,
+    footerEl: renderedPhones.sw.footerEl,
   },
 };
+
+export interface FooterLabels {
+  left: string;
+  center: string;
+  right: string;
+}
+
+/**
+ * Computes the Nokia 1280 softkey labels (Left, Center, Right) based on current screen state and language.
+ */
+export function getFooterLabels(state: ScreenState, lang: Language): FooterLabels {
+  const t = dictonary[lang];
+  const hasBuffer = 'buffer' in state && typeof state.buffer === 'string' && state.buffer.length > 0;
+
+  switch (state.state) {
+    case 'dialing':
+      if (hasBuffer) {
+        return {
+          left: t.footerCall,
+          center: '',
+          right: t.footerClear,
+        };
+      }
+      return {
+        left: t.footerMenu,
+        center: '',
+        right: t.footerGoto,
+      };
+
+    case 'main-menu':
+      if (hasBuffer) {
+        return {
+          left: t.footerSelect,
+          center: '',
+          right: t.footerClear,
+        };
+      }
+      return {
+        left: t.footerSelect,
+        center: '',
+        right: t.footerExit,
+      };
+
+    case 'withdraw-menu':
+      if (hasBuffer) {
+        return {
+          left: t.footerSelect,
+          center: '',
+          right: t.footerClear,
+        };
+      }
+      return {
+        left: t.footerSelect,
+        center: '',
+        right: t.footerBack,
+      };
+
+    case 'enter-phone-number':
+    case 'enter-amount':
+      if (hasBuffer) {
+        return {
+          left: t.footerOk,
+          center: '',
+          right: t.footerClear,
+        };
+      }
+      return {
+        left: t.footerOk,
+        center: '',
+        right: t.footerBack,
+      };
+
+    case 'confirmation':
+      if ((state as any).message) {
+        return {
+          left: t.footerOk,
+          center: '',
+          right: t.footerExit,
+        };
+      }
+      if (hasBuffer) {
+        return {
+          left: t.footerOk,
+          center: '',
+          right: t.footerClear,
+        };
+      }
+      return {
+        left: t.footerOk,
+        center: '',
+        right: t.footerBack,
+      };
+
+    case 'balance-screen':
+      return {
+        left: t.footerOk,
+        center: '',
+        right: t.footerBack,
+      };
+
+    case 'statement-screen': {
+      const txns = getTransactions(lang);
+      const statPage = (state as any).page || 0;
+      const TXNS_PER_PAGE = 1;
+      const statTotalPages = Math.ceil(txns.length / TXNS_PER_PAGE) || 1;
+      const moreHint = lang === 'sw' ? '9:Zaidi' : '9:More';
+      const backHint = lang === 'sw' ? '0:Rudi' : '0:Back';
+      return {
+        left: moreHint,
+        center: `${statPage + 1}/${statTotalPages}`,
+        right: backHint,
+      };
+    }
+
+    default:
+      return {
+        left: t.footerOk,
+        center: '',
+        right: t.footerBack,
+      };
+  }
+}
 
 function getPageTitle(state: string): string {
   const map: Record<string, string> = {
@@ -41,24 +170,37 @@ function getPageTitle(state: string): string {
     'enter-amount': 'Enter Amount',
     confirmation: 'Confirmation',
     'timeout-alert': 'Timeout Alert',
+    'statement-screen': 'Mini Statement',
   };
   return map[state] || state;
 }
 
 function renderLCD(phone: PhoneState): void {
-  if (!phone.screenEl) return;
-  const { ctx } = phone;
+  const { ctx, screenEl, footerEl } = phone;
   const { current, language } = ctx;
   const t = dictonary[language];
-  let output = '';
 
+  // Update Nokia 1280 softkey labels in the bottom footer
+  if (footerEl) {
+    const labels = getFooterLabels(current, language);
+    const leftEl = footerEl.querySelector('.footer-left');
+    const centerEl = footerEl.querySelector('.footer-center');
+    const rightEl = footerEl.querySelector('.footer-right');
+    if (leftEl) leftEl.textContent = labels.left;
+    if (centerEl) centerEl.textContent = labels.center;
+    if (rightEl) rightEl.textContent = labels.right;
+  }
+
+  if (!screenEl) return;
+
+  let output = '';
 
   // Automatically renders menu title, options, active input buffer, and error validation
   const menu = getMenu(current.state);
   if (menu) {
     const buffer = (current as any).buffer;
     const error = (current as any).error;
-    phone.screenEl.textContent = formatMenu(menu, language, buffer, error);
+    screenEl.textContent = formatMenu(menu, language, buffer, error);
     return;
   }
 
@@ -68,7 +210,7 @@ function renderLCD(phone: PhoneState): void {
       output = current.error
         ? `${current.error}\n\n[Back]`
         : current.buffer && current.buffer.length > 0
-          ? `${current.buffer}\n\n[Dial]`
+          ? `${current.buffer}`
           : t.dialingPrompt;
       break;
 
@@ -97,9 +239,36 @@ function renderLCD(phone: PhoneState): void {
           ? `${current.message}\n\n[Back]`
           : `${t.confirmPrompt(current.amount, current.recipientPhone)}\n> ${(current as any).buffer || ''}`;
       break;
+
+    case 'statement-screen': {
+      const txns = getTransactions(language);
+      const page = (current as any).page || 0;
+      const TXNS_PER_PAGE = 1;
+      const totalPages = Math.ceil(txns.length / TXNS_PER_PAGE) || 1;
+      const start = page * TXNS_PER_PAGE;
+      const slice = txns.slice(start, start + TXNS_PER_PAGE);
+      const title = language === 'sw' ? 'Taarifa za Miamala' : 'Mini Statement';
+      const header = `${title} (${page + 1}/${totalPages})`;
+
+      if (txns.length === 0) {
+        output = `${header}\n\n${language === 'sw' ? 'Hakuna miamala bado.' : 'No transactions yet.'}`;
+      } else {
+        const tx = slice[0];
+        const amtStr = `KES ${tx.amount.toLocaleString('en-KE', { minimumFractionDigits: 2 })}`;
+        const refLabel = language === 'sw' ? 'Ref' : 'Ref';
+        const dateLabel = language === 'sw' ? 'Tarehe' : 'Date';
+        const toLabel = language === 'sw' ? 'Kwenda' : 'To';
+        const amtLabel = language === 'sw' ? 'Kiasi' : 'Amt';
+
+        output = `${header}\n${refLabel}: ${tx.ref}\n${dateLabel}: ${tx.date}\n${toLabel}: ${tx.maskedPhone}\n${amtLabel}: ${amtStr}`;
+      }
+      break;
+    }
   }
 
-  phone.screenEl.textContent = output;
+  if (screenEl) {
+    screenEl.textContent = output;
+  }
 }
 
 // Analyzes keypad interactions and records detailed session audit log entries
@@ -122,16 +291,31 @@ function logUserInteraction(
 
   //  Dialer Screen interactions
   if (prevState.state === 'dialing') {
-    if (key === 'call' || key === 'ok') {
+    if (key === 'soft-left' || key === 'call' || key === 'ok') {
       const dialBuffer = (prevState as any).buffer || '';
       if (nextState.state === 'main-menu') {
         // Start fresh session identifier upon successful dialing
         startNewSession(phoneId);
-        recordSessionLog(phoneId, 'Dialer', 'Session Initiated (*144#)', dialBuffer, 'ACTIVE');
+        const method = key === 'soft-left' ? 'via Menu Key' : 'via Call/OK';
+        recordSessionLog(phoneId, 'Dialer', `Session Initiated (*144#) ${method}`, dialBuffer || '*144#', 'ACTIVE');
       } else if (nextState.error) {
         recordSessionLog(phoneId, 'Dialer', 'Invalid USSD Code Dialed', dialBuffer || '[Empty]', 'ERROR');
       }
+    } else if (key === 'back' && !(prevState as any).buffer) {
+      recordSessionLog(phoneId, 'Dialer', 'Quick Dial (*144#) pre-filled via Go to Key', 'Go to', 'ACTIVE');
     }
+    return;
+  }
+
+  // Clear action when Back is pressed while buffer is populated
+  if (key === 'back' && (prevState as any).buffer && (prevState as any).buffer.length > 0) {
+    recordSessionLog(phoneId, prevTitle, 'Character deleted via Clear Key', 'Clear', 'ACTIVE');
+    return;
+  }
+
+  // Exit action on Main Menu
+  if (prevState.state === 'main-menu' && key === 'back' && !(prevState as any).buffer) {
+    recordSessionLog(phoneId, 'Main Menu', 'Session Terminated via Exit Key', 'Exit', 'TERMINATED');
     return;
   }
 
@@ -209,6 +393,8 @@ function logUserInteraction(
         const amt = (nextState as any).amount;
         const phone = (nextState as any).recipientPhone;
         recordSessionLog(phoneId, 'Confirmation', `Transaction Confirmed: Sent KES ${amt} to ${phone}`, `KES ${amt} -> ${phone}`, 'SUCCESS');
+        // Persist to statement store
+        recordTransaction(phone, amt, phoneId);
       } else if (choice === '2') {
         recordSessionLog(phoneId, 'Confirmation', 'Transaction Cancelled by User', '2 (Cancel)', 'TERMINATED');
       } else if (nextState.error) {
@@ -231,16 +417,29 @@ function logUserInteraction(
     }
   }
 
+  // Statement screen navigation
+  if (prevState.state === 'statement-screen') {
+    if (key === '9') {
+      const page = (nextState as any).page || 0;
+      recordSessionLog(phoneId, 'Mini Statement', `Viewed Page ${page + 1} via [9:More]`, '9 (More)', 'ACTIVE');
+      return;
+    }
+    if (key === '0' || (key === 'back' && nextState.state !== prevState.state)) {
+      recordSessionLog(phoneId, 'Mini Statement', 'Returned to Main Menu via [0:Back]', '0 (Back)', 'ACTIVE');
+      return;
+    }
+  }
+
   //  General Back navigation across screens
   if (key === 'back' && prevState.state !== nextState.state) {
     recordSessionLog(phoneId, prevTitle, `Navigated Back to ${getPageTitle(nextState.state)}`, '[Back]', 'ACTIVE');
   }
 }
 
-// Independent Keypad Event Delegation for each phone
+// Independent Keypad & Softkey Event Delegation for each phone
 document.addEventListener('click', (event: MouseEvent) => {
   const target = event.target as HTMLElement;
-  const button = target.closest('button');
+  const button = target.closest('button, [data-action]') as HTMLElement | null;
   if (!button) return;
 
   const phoneCasing = button.closest('.phone-casing') as HTMLElement | null;
@@ -249,18 +448,13 @@ document.addEventListener('click', (event: MouseEvent) => {
   const phoneId = phoneCasing.dataset.phoneId as Language | undefined;
   if (!phoneId || !phones[phoneId]) return;
 
-  let rawKey = button.dataset.key || button.dataset.action;
-  // Map left softkey to 'ok' for intuitive Nokia select/confirm action
-  if (rawKey === 'soft-left') {
-    rawKey = 'ok';
-  }
-
+  const rawKey = button.dataset.key || button.dataset.action;
   const key = rawKey as KeypadKey | undefined;
   if (!key) return;
 
   // Intercept events if the "Are you there?" timeout alert popup is active
   if (isTimeoutPopupOpen(phoneId)) {
-    if (key === 'ok') {
+    if (key === 'ok' || key === 'soft-left') {
       dismissTimeoutPopupAndContinue(phoneId);
       return;
     }
@@ -301,9 +495,15 @@ initSessionTimeout({
   onResetToDialing: (phoneId: Language) => {
     const phone = phones[phoneId];
     if (!phone) return;
+    const timeoutMsg = phoneId === 'sw' ? 'Muda wa kipindi umekwisha.\nTumia *144#' : 'Session timed out.\nUse *144#';
     phone.ctx = {
       ...createInitialContext(),
       language: phoneId,
+      current: {
+        state: 'dialing',
+        buffer: '',
+        error: timeoutMsg,
+      },
     };
     renderLCD(phone);
   },

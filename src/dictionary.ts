@@ -21,11 +21,20 @@ export const dictonary: Record<Language, Translations> = {
         successWithdraw: (amount, phone) => `Transferred KES ${amount}\nto ${phone} successfully.`,
         errorInvalidUssd: "Invalid USSD Code.\nUse *144#",
         errorInvalidPhone: "Invalid Phone.\nMust be 10 digits\n(07... or 01...)",
-        errorInvalidAmount: "Invalid Amount.\nMin: KES 50",
+        errorInvalidAmount: "Invalid Amount.\nMin: KES 50\nMax: KES 70,000",
         errorInsufficientBalance: "Failed:\nInsufficient balance.",
         errorInvalidInput: "Invalid input.\nTry again.",
         errorInvalidChoice: "Invalid choice.\nTry again.",
-        backOption: "Back"
+        backOption: "Back",
+        footerMenu: "Menu",
+        footerGoto: "Go to",
+        footerExit: "Exit",
+        footerSelect: "Select",
+        footerOk: "OK",
+        footerClear: "Clear",
+        footerBack: "Back",
+        footerNext: "Next",
+        footerCall: "Call"
     },
     sw: {
         dialingPrompt: "Akiba SACCO\nPiga *144#",
@@ -46,11 +55,20 @@ export const dictonary: Record<Language, Translations> = {
         successWithdraw: (amount, phone) => `Umetuma KES ${amount}\nkwenda ${phone} kikamilifu.`,
         errorInvalidUssd: "Nambari sio sahihi.\nTumia *144#",
         errorInvalidPhone: "Namba sio sahihi.\nTariki 10 (07/01)",
-        errorInvalidAmount: "Kiasi sio sahihi.\nKiwango cha chini: 50",
+        errorInvalidAmount: "Kiasi sio sahihi.\nMin: 50 | Max: 70,000",
         errorInsufficientBalance: "Imeshindikana:\nSalio haitoshi.",
         errorInvalidInput: "Ingizo sio sahihi.\nJaribu tena.",
         errorInvalidChoice: "Chaguo sio sahihi.\nJaribu tena.",
-        backOption: "Rudi"
+        backOption: "Rudi",
+        footerMenu: "Menyu",
+        footerGoto: "Nenda",
+        footerExit: "Toka",
+        footerSelect: "Chagua",
+        footerOk: "Sawa",
+        footerClear: "Futa",
+        footerBack: "Rudi",
+        footerNext: "Zaidi",
+        footerCall: "Piga"
     }
 };
 
