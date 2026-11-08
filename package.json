@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Authentic Nokia 1280 dual-handset USSD web emulator for Akiba SACCO with real-time audit logging and DataTables integration.",
   "scripts": {
-    "build": "tsc",
+    "build": "node node_modules/typescript/bin/tsc",
     "watch": "tsc --watch"
   },
   "devDependencies": {

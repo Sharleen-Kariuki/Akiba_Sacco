@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Local env files
+.env
+.env.local
+
+# Vercel
+.vercel
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
