@@ -249,8 +249,8 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   overflow: hidden;
-  font-size: 10.5px;
-  line-height: 13px;
+  font-size: 10px;
+  line-height: 12px;
 }
 
 /* Nokia 1280 Bottom Softkey Navigation Bar */

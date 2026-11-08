@@ -5,6 +5,7 @@ import { renderAllKeypads } from './keypad.js';
 import { getMenu, formatMenu } from './menus.js';
 import { initDataTable, recordSessionLog, startNewSession, recordTransaction, getTransactions } from './logger.js';
 import { renderPhoneHandsets } from './phone.js';
+import { getValidatedStatementPages } from './statement.js';
 // Dynamically instantiate the dual phones from the HTML template
 const renderedPhones = renderPhoneHandsets();
 const phones = {
@@ -109,9 +110,10 @@ export function getFooterLabels(state, lang) {
             };
         case 'statement-screen': {
             const txns = getTransactions(lang);
-            const statPage = state.page || 0;
-            const TXNS_PER_PAGE = 1;
-            const statTotalPages = Math.ceil(txns.length / TXNS_PER_PAGE) || 1;
+            const pages = getValidatedStatementPages(txns, lang);
+            const statTotalPages = pages.length;
+            const rawPage = state.page || 0;
+            const statPage = Math.min(Math.max(0, rawPage), statTotalPages - 1);
             const moreHint = lang === 'sw' ? '9:Zaidi' : '9:More';
             const backHint = lang === 'sw' ? '0:Rudi' : '0:Back';
             return {
@@ -203,25 +205,10 @@ function renderLCD(phone) {
             break;
         case 'statement-screen': {
             const txns = getTransactions(language);
-            const page = current.page || 0;
-            const TXNS_PER_PAGE = 1;
-            const totalPages = Math.ceil(txns.length / TXNS_PER_PAGE) || 1;
-            const start = page * TXNS_PER_PAGE;
-            const slice = txns.slice(start, start + TXNS_PER_PAGE);
-            const title = language === 'sw' ? 'Taarifa za Miamala' : 'Mini Statement';
-            const header = `${title} (${page + 1}/${totalPages})`;
-            if (txns.length === 0) {
-                output = `${header}\n\n${language === 'sw' ? 'Hakuna miamala bado.' : 'No transactions yet.'}`;
-            }
-            else {
-                const tx = slice[0];
-                const amtStr = `KES ${tx.amount.toLocaleString('en-KE', { minimumFractionDigits: 2 })}`;
-                const refLabel = language === 'sw' ? 'Ref' : 'Ref';
-                const dateLabel = language === 'sw' ? 'Tarehe' : 'Date';
-                const toLabel = language === 'sw' ? 'Kwenda' : 'To';
-                const amtLabel = language === 'sw' ? 'Kiasi' : 'Amt';
-                output = `${header}\n${refLabel}: ${tx.ref}\n${dateLabel}: ${tx.date}\n${toLabel}: ${tx.maskedPhone}\n${amtLabel}: ${amtStr}`;
-            }
+            const pages = getValidatedStatementPages(txns, language);
+            const rawPage = current.page || 0;
+            const activePageIndex = Math.min(Math.max(0, rawPage), pages.length - 1);
+            output = pages[activePageIndex].displayText;
             break;
         }
     }

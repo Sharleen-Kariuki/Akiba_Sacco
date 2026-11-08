@@ -39,7 +39,7 @@ The emulator features side-by-side English and Kiswahili handsets, genuine softk
 - **Full USSD Banking Workflows**:
   - `1. Balance Enquiry` (`Taarifa ya Salio`) — live balance display with two-decimal currency formatting.
   - `2. Withdraw Money` (`Toa Pesa`) — withdrawal to own number or custom 10-digit Kenyan phone number (`07...` or `01...`).
-  - `3. Mini Statements` (`Reporti`) — 1 transaction per screen with strict 182-character USSD adherence, masked recipient phones (`0712***789`), and cyclic pagination (`9:More`, `0:Back`).
+  - `3. Mini Statements` (`Reporti`) — up to 3 transactions per screen with strict 182-character USSD adherence, overflow validation, and cyclic pagination (`9:More`, `0:Back`).
 - **DRY & Modular HTML5 Architecture**: Zero HTML markup duplication — dual phones are instantiated dynamically from a single `<template id="phone-template">`.
 - **Configurable Session Timeouts**: Outside toggle pills (`5s`, `10s`, `20s`) with authentic text-based timeout notices (no annoying popups).
 - **Session Audit Trail**: Integrated DataTables displaying session IDs, timestamps, transacted values, status badges, and expandable child event drawers.

@@ -19,6 +19,7 @@
     "src/logger.ts",
     "src/menus.ts",
     "src/phone.ts",
+    "src/statement.ts",
     "src/timeout.ts",
     "src/types.ts"
   ]

@@ -1,6 +1,7 @@
 import { dictonary } from './dictionary.js';
 import { getMenu } from './menus.js';
 import { getTransactions } from './logger.js';
+import { getValidatedStatementPages } from './statement.js';
 export { renderKeypad, renderAllKeypads } from './keypad.js';
 export { MENUS, getMenu, formatMenu } from './menus.js';
 export function createInitialContext() {
@@ -404,8 +405,8 @@ export function handleKeypadEvent(ctx, key) {
         case 'statement-screen': {
             const page = current.page || 0;
             const txns = getTransactions(language);
-            const TXNS_PER_PAGE = 1;
-            const totalPages = Math.ceil(txns.length / TXNS_PER_PAGE) || 1;
+            const pages = getValidatedStatementPages(txns, language);
+            const totalPages = pages.length;
             // 9 (or OK/Call) = scroll to next page (cycles through all pages: 1 -> 2 -> 3 -> 1)
             if (key === '9' || key === 'ok' || key === 'call') {
                 const nextPage = totalPages > 1 ? (page + 1) % totalPages : 0;
